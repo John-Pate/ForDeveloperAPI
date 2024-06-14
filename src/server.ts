@@ -3,6 +3,7 @@ import http from "http";
 import * as mongoose from "mongoose";
 import config from "./config/config";
 import { router as appRouter } from "./routes/index";
+import session from "express-session";
 
 const router = express();
 
@@ -36,6 +37,15 @@ const StartServer = async () => {
     next();
   });
 
+  router.use(
+    session({
+      secret: config.jwtSecret.key, // Replace with your secret key
+      resave: false,
+      saveUninitialized: true,
+      cookie: { secure: false }, // Set secure to true if you are using HTTPS
+    })
+  );
+
   //API ROUTES WITH VERSION
   router.use("/API", appRouter);
 
@@ -61,7 +71,12 @@ const StartServer = async () => {
   });
 
   //HANDEL ALL ERROR THROW BY CONTROLLERS
-  router.use(function (err: any, req: Request, res: Response, next: NextFunction) {
+  router.use(function (
+    err: any,
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
     console.log(err.stack);
     if (err) {
       return err.sendError(res);

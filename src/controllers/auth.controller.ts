@@ -8,7 +8,7 @@ import config from "../config/config";
 const AuthController = () => {
   const signup = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { username, email, password, role } = req.body;
+      const { firstName, lastName, email, password, role } = req.body;
       const userExist = await User.exists({ email });
       if (userExist) {
         return res.status(409).json({
@@ -38,7 +38,8 @@ const AuthController = () => {
       const salt = genSaltSync(10);
       const hashedPassword = hashSync(password, salt);
       let newUser = new User({
-        username,
+        firstName,
+        lastName,
         email,
         password: hashedPassword,
         role: roleExist._id,
@@ -81,10 +82,24 @@ const AuthController = () => {
           ],
         });
       }
-      // const token = jwt.sign({ id: user._id }, config.jwtSecret.key, {
-      //   expiresIn: "1h",
-      // });
-      res.status(200).json({ success: true, data: user });
+      const token = jwt.sign({ id: user._id }, config.jwtSecret.key, {
+        algorithm: "HS256",
+        allowInsecureKeySizes: true,
+        expiresIn: 7200,
+      });
+      const roles = await user.role.name;
+      return res.status(200).json({
+        success: true,
+        data: {
+          _id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          roles: roles,
+          token: token,
+          expiresIn: 7200,
+        },
+      });
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }

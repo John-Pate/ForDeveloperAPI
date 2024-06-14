@@ -2,17 +2,23 @@ import mongoose, { Schema, model, Document } from "mongoose";
 import { IRole } from "./role.model";
 
 interface IUser extends Document {
-  username: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
+  role: IRole;
   createdAt: Date;
   updatedAt: Date;
-  role: IRole;
 }
 
 const UserSchema = new Schema<IUser>(
   {
-    username: {
+    firstName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    lastName: {
       type: String,
       required: true,
       trim: true,
